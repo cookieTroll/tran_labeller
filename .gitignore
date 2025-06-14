@@ -1,0 +1,21 @@
+# Python
+   __pycache__/
+   *.py[cod]
+   *$py.class
+   .pytest_cache/
+
+   # Jupyter
+   .ipynb_checkpoints
+
+   # IDE
+   .idea/
+   .vscode/
+
+   # Data
+   data/raw/*
+   data/processed/*
+   !data/raw/.gitkeep
+   !data/processed/.gitkeep
+
+    # Sensitive configuration (temporary solution)
+    config/keywords.yaml
