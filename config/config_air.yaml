@@ -1,0 +1,38 @@
+file_name_input: Pohyby_xx.csv
+file_name_output: Airbanka_xx.xlsx
+fix_file_name: records_to_fix
+
+parsing:
+  delimiter: ;
+  encoding: Windows-1250
+input_format:
+  payment_category: Kategorie plateb # categorization from your account used as a baseline, assuming the variable is string
+  date:
+    - col: Datum provedení # date column
+    - format: xx
+  counterparty_ids: # ids identifying the transaction, they get concatenated together creating a variable to label on, assuming the variables are strings
+  - Obchodní místo
+  - Název protistrany
+  - Název účtu protistrany
+  - Číslo účtu protistrany
+  - Poznámka k úhradě
+  message: # user message, used to enhance the identification, assuming those variables are strings
+  - Poznámka pro mne
+  - Zpráva pro příjemce
+  amount:
+    - col: Částka v měně účtu # amount
+    - format:
+        - decimal_separator: '.'
+        - thousands_separator: ' '
+  transaction_type: Typ úhrady # transaction type (inbound/outbound), string
+output_format: # output naming
+  display_groups: Kategorie_plateb # categorization column
+  counterparty: counterparty # columns to do categorization on, protistrana is generated as concat of protistrana ids
+  message: message  # concat of protistrana_ids cols
+  amount: částka
+  date: datum # standardized name for date
+  transaction_type: Typ transakce
+  payment_category: Kategorie_plateb # standardized name for category
+  sort_by:
+  - Kategorie_plateb
+  - měsíc # processed columns
