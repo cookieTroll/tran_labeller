@@ -18,11 +18,17 @@ def load_config(file_path:str, encoding='utf-8')->Optional[Union[dict[str, Any],
   """Loads and parses a YAML configuration file."""
   if is_path(file_path):
     with open(file_path, 'r', encoding=encoding) as file:
-      return yaml.safe_load(file)
+      cf = yaml.safe_load(file)
+      logging.info(f'Loaded config from :{file_path}')
+      logging.info(cf)
+      return cf
 
 def read_csv(file_path: str, delimiter:str=',', encoding:Optional[str]=None)->pd.DataFrame:
   """ Reads a CSV file and returns a Pandas DataFrame."""
-  return pd.read_csv(f'{file_path}', delimiter=delimiter, encoding=encoding)
+  df = pd.read_csv(f'{file_path}', delimiter=delimiter, encoding=encoding)
+  logging.info(f'Loaded CSV from :{file_path}')
+  logging.info(df)
+  return df
 
 def read_write_json(file_path:str, mode:str, payload:dict[str, Any]=None, encoding=None)->Optional[dict[str, Any]]:
   if encoding is None:

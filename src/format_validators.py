@@ -1,5 +1,6 @@
 """ Script contains functions to validate configuration files."""
 import logging
+import pandas as pd
 from typing import List, Optional, Any
 
 from openpyxl.pivot.fields import Boolean
@@ -72,36 +73,16 @@ def validate_bank_config(config_dict: dict[str, Any]) -> bool:
         ConfigSchema(**config_dict)
         return True
     except ValidationError as e:
-        logging.CRITICAL("Bank configuration validation failed:")
+        logging.critical("Bank configuration validation failed:")
         for error in e.errors():
-            logging.CRITICAL(f"- {error['loc']}: {error['msg']}")
+            logging.critical(f"- {error['loc']}: {error['msg']}")
         raise e
 
 
-class SimpleConfig(BaseModel):
-    data: dict[str, list[str]]
-
-
-def validate_keywords_config(config_dict: dict[str, Any]) -> bool:
-    """
-        Validate the configuration dictionary against the schema.
-
-        Args:
-            config_dict: Dictionary containing the configuration
-
-        Returns:
-            ConfigSchema: Validated configuration object
-
-        Raises:
-            ValidationError: If the configuration is invalid
-        """
-    try:
-        SimpleConfig(**config_dict)
-        return True
-    except ValidationError as e:
-        logging.CRITICAL("Keywords validation failed:")
-        for error in e.errors():
-            logging.CRITICAL(f"- {error['loc']}: {error['msg']}")
-        raise e
-
-
+def validate_data(data:pd.DataFrame, cols:list[str])->bool:
+    """Validates that all columns in cols are present in the data."""
+    check = set(cols).issubset(set(data.columns))
+    if not check:
+        logging.critical(f"Missing columns in data: {set(cols) - set(data.columns)}")
+        raise ValueError(f"Missing columns in data: {set(cols) - set(data.columns)}")
+    return check

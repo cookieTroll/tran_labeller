@@ -8,8 +8,8 @@ parsing:
 input_format:
   payment_category: Kategorie plateb # categorization from your account used as a baseline, assuming the variable is string
   date:
-    - col: Datum provedení # date column
-    - format: xx
+    col: Datum provedení # date column
+    format: xx
   counterparty_ids: # ids identifying the transaction, they get concatenated together creating a variable to label on, assuming the variables are strings
   - Obchodní místo
   - Název protistrany
@@ -20,10 +20,10 @@ input_format:
   - Poznámka pro mne
   - Zpráva pro příjemce
   amount:
-    - col: Částka v měně účtu # amount
-    - format:
-        - decimal_separator: '.'
-        - thousands_separator: ' '
+    col: Částka v měně účtu # amount
+    format:
+        decimal_separator: '.'
+        thousands_separator: ' '
   transaction_type: Typ úhrady # transaction type (inbound/outbound), string
 output_format: # output naming
   display_groups: Kategorie_plateb # categorization column
