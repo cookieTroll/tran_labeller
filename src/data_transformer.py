@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+
 DATE_FORMATS = [
     "%d/%m/%Y %H:%M:%S",
     "%d/%m/%Y",
@@ -193,7 +194,7 @@ def parse_data(
         not i_f.get("payment_category", None)
         or i_f["payment_category"] not in data_raw.columns
     ):
-        data_raw[o_f["payment_catyegory"]] = None
+        data_raw[o_f["payment_category"]] = None
 
     # amount
     data_raw[o_f["amount"]] = parse_amounts(
@@ -215,3 +216,5 @@ def parse_data(
     data_raw[o_f["message"]] = combine_fields(data_raw, i_f["message"])
 
     return data_raw[keep_cols]
+
+
