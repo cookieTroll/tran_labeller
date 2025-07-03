@@ -25,12 +25,14 @@ input_format:
         decimal_separator: '.'
         thousands_separator: ' '
   transaction_type: Typ úhrady # transaction type (inbound/outbound), string
+  inbound_keyword: Příchozí # keyword to filter inbound payments
 output_format: # output naming
   display_groups: Kategorie_plateb # categorization column
   counterparty: counterparty # columns to do categorization on, protistrana is generated as concat of protistrana ids
   message: message  # concat of protistrana_ids cols
   amount: částka
   date: datum # standardized name for date
+  generated_suggestions: category_suggestion
   transaction_type: Typ transakce
   payment_category: Kategorie_plateb # standardized name for category
   sort_by:

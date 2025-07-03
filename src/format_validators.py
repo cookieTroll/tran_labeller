@@ -30,6 +30,7 @@ class OutputFormat(BaseModel):
     date: str
     transaction_type: str
     payment_category: str
+    generated_suggestions: str
     sort_by: List[str]
 
 
@@ -40,6 +41,7 @@ class InputFormat(BaseModel):
     message: List[str]
     amount: AmountConfig
     transaction_type: str
+    inbound_keyword: str
 
 
 class ParsingConfig(BaseModel):
