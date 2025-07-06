@@ -1,0 +1,25 @@
+parsing:
+  delimiter: ;
+  encoding: Windows-1250
+input_format:
+  #payment_category: Kategorie plateb # categorization from your account used as a baseline, assuming the variable is string
+  date:
+    col: Datum provedení # date column
+    format:
+      - "%d.%m.%Y"
+  counterparty_ids: # ids identifying the transaction, they get concatenated together creating a variable to label on, assuming the variables are strings
+    - Poznámka
+    - Zpráva
+    - Název obchodníka
+    - Město
+    - Název protiúčtu
+    - Číslo protiúčtu
+  message: # user message, used to enhance the identification, assuming those variables are strings
+    - Vlastní poznámka
+  amount:
+    col: Zaúčtovaná částka # amount
+    format:
+      decimal_separator: ','
+      thousands_separator: ' '
+  transaction_type: Typ transakce # transaction type (inbound/outbound), string
+  inbound_keyword: Příchozí platba # keyword to filter inbound payments
