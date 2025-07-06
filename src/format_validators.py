@@ -1,39 +1,52 @@
-""" Script contains functions to validate configuration files."""
+"""Script contains functions to validate configuration files."""
+
 import logging
 import pandas as pd
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Literal, Union
 
 from openpyxl.pivot.fields import Boolean
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ValidationError
 
 
+# fields within config
 class AmountFormat(BaseModel):
     decimal_separator: str
     thousands_separator: str
 
 
-class AmountConfig(BaseModel):
+class FormatConfig(BaseModel):
+    """Base class for format configurations."""
+
     col: str
-    format: Optional[AmountFormat] = None
+    format: Union[str, List[str], None] = None
 
 
-class DateConfig(BaseModel):
-    col: str
-    format: Optional[str] = None
+class AmountConfig(FormatConfig):
+    format: AmountFormat | None = None
 
 
+class DateConfig(FormatConfig):
+    format: List[str] | None = None
+
+
+class ParsingConfig(BaseModel):
+    delimiter: str
+
+
+# structure of output config
 class OutputFormat(BaseModel):
     display_groups: str
     counterparty: str
     message: str
     amount: str
-    date: str
+    date: DateConfig
     transaction_type: str
-    payment_category: str
+    payment_category: Optional[str]
     generated_suggestions: str
     sort_by: List[str]
 
 
+# structure of input config
 class InputFormat(BaseModel):
     payment_category: str
     date: DateConfig
@@ -44,35 +57,53 @@ class InputFormat(BaseModel):
     inbound_keyword: str
 
 
-class ParsingConfig(BaseModel):
-    delimiter: str
+class Input(BaseModel):
+    input_format: InputFormat
+    parsing: Optional[ParsingConfig] = None
 
 
-
-class ConfigSchema(BaseModel):
+# structure of high-level config which provides files to assemble full config
+class BankConfig(BaseModel):
     file_name_input: str
     file_name_output: str
     fix_file_name: str
-    parsing: Optional[ParsingConfig] = None
-    input_format: InputFormat
-    output_format: OutputFormat
+
+    input_config: str
+    output_config: str
+    keywords_config: str
 
 
-def validate_bank_config(config_dict: dict[str, Any]) -> bool:
+# Full config used to drive the pipeline
+class FullConfigSchema(BaseModel):
+    file_name_input: str
+    file_name_output: str
+    fix_file_name: str
+    input_config: Input
+    output_config: OutputFormat
+    keywords_config: Optional[dict[str, List[str]]] = None
+
+
+def validate_config(
+    config_dict: dict[str, Any], cf_type=Literal["Full", "High-level"]
+) -> bool:
     """
     Validate the configuration dictionary against the schema.
 
     Args:
         config_dict: Dictionary containing the configuration
+        cf_type: Literal['Full', 'High-level'] - Full config or high-level config.
 
     Returns:
-        ConfigSchema: Validated configuration object
+        boolean: True if the configuration is valid, False otherwise.
 
     Raises:
         ValidationError: If the configuration is invalid
     """
     try:
-        ConfigSchema(**config_dict)
+        if cf_type == "Full":
+            FullConfigSchema(**config_dict)
+        else:
+            BankConfig(**config_dict)
         return True
     except ValidationError as e:
         logging.critical("Bank configuration validation failed:")
@@ -81,7 +112,7 @@ def validate_bank_config(config_dict: dict[str, Any]) -> bool:
         raise e
 
 
-def validate_data(data:pd.DataFrame, cols:list[str])->bool:
+def validate_data(data: pd.DataFrame, cols: list[str]) -> bool:
     """Validates that all columns in cols are present in the data."""
     check = set(cols).issubset(set(data.columns))
     if not check:
