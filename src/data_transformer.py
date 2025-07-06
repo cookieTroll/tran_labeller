@@ -109,42 +109,61 @@ def parse_amounts(
 
 def clean_overlapping_fields(df: pd.DataFrame, column_ids: list[str]) -> pd.DataFrame:
     """
-    Clean overlapping values in specified columns. If value from one column
-    is contained within another column's value, replace it with NaN.
+    Clean overlapping fields by removing redundant information.
+    If the same text appears in multiple columns, keep it only in one place
+    according to these rules:
+    1. For exact matches, keep value in the first column
+    2. If one string contains another, keep the longer string
 
     Args:
-        df: Input DataFrame
+        df: DataFrame to process
         column_ids: List of column names to check for overlaps
 
     Returns:
-        DataFrame with cleaned overlapping values
+        DataFrame with cleaned overlapping fields
+
+    Example:
+        >>> df = pd.DataFrame({
+        ...     'col1': ['apple', 'banana', 'cherry'],
+        ...     'col2': ['big apple', 'banana', 'berry']
+        ... })
+        >>> clean_overlapping_fields(df, ['col1', 'col2'])
+           col1       col2
+        0  NaN   big apple
+        1  NaN     banana
+        2  cherry    berry
     """
-    df = df.copy()
+    data = df.copy()
 
-    # Convert all values to strings and handle NaN values
+    # Convert all relevant columns to string type
     for col in column_ids:
-        df[col] = df[col].astype(str).replace("nan", np.nan)
+        data[col] = data[col].astype(str)
 
-    # Check each pair of columns for overlaps
+    # Process each pair of columns
     for i, col1 in enumerate(column_ids):
         for col2 in column_ids[i + 1 :]:
-            mask1 = df[col1].notna() & df[col2].notna()
-            if not mask1.any():
+            # Create mask for non-null pairs
+            valid_pairs = data[col1].notna() & data[col2].notna()
+            if not valid_pairs.any():
                 continue
 
-            # Create masks for overlapping values in both directions
-            contains_mask1 = mask1 & df.apply(
-                lambda x: str(x[col1]) in str(x[col2]), axis=1
-            )
-            contains_mask2 = mask1 & df.apply(
-                lambda x: str(x[col2]) in str(x[col1]), axis=1
-            )
+            # Get series of valid pairs
+            s1 = data.loc[valid_pairs, col1]
+            s2 = data.loc[valid_pairs, col2]
 
-            # Apply masks
-            df.loc[contains_mask1, col1] = np.nan
-            df.loc[contains_mask2, col2] = np.nan
+            # Find exact matches
+            exact_matches = s1 == s2
+            data.loc[valid_pairs & exact_matches, col2] = np.nan
 
-    return df
+            # Find contained strings
+            contains1 = s2.str.contains(s1, regex=False)
+            contains2 = s1.str.contains(s2, regex=False)
+
+            # Update based on containment
+            data.loc[valid_pairs & contains1, col1] = np.nan
+            data.loc[valid_pairs & contains2, col2] = np.nan
+
+    return data
 
 
 def combine_fields(df: pd.DataFrame, cols: list[str]) -> pd.Series:
@@ -172,13 +191,38 @@ def combine_fields(df: pd.DataFrame, cols: list[str]) -> pd.Series:
 def parse_data(
     data: pd.DataFrame, config: dict[str, Any], errors="coerce"
 ) -> pd.DataFrame:
-    """The function takes loaded data, parses format and transforms them to a more convenient format."""
+    """
+    Parses and transforms financial data from one format to another based on provided
+    configuration.
+
+    The function processes a DataFrame by performing transformations such as renaming
+    columns, parsing amounts and dates, and combining multiple fields into new columns.
+    It makes use of a configuration dictionary to map input and output formats and applies
+    data manipulation accordingly. The resulting DataFrame contains only the specified
+    columns in the desired format.
+
+    Parameters:
+    data: pd.DataFrame
+        The input DataFrame containing the raw financial data to be parsed and formatted.
+    config: dict[str, Any]
+        A dictionary specifying the input and output data format mappings, including
+        column names, date formats, and any field combining rules.
+    errors: str, optional
+        Defines how to handle parsing errors; default is "coerce", which forces invalid
+        data into NaN values.
+
+    Returns:
+    pd.DataFrame
+        The transformed DataFrame containing only the specified columns formatted
+        according to the output configuration.
+    """
     data_raw = data.copy(deep=True)
     i_f = config["input_format"]
     o_f = config["output_format"]
 
     keep_cols = [
         o_f["transaction_type"],
+        o_f["payment_category"],
         o_f["amount"],
         o_f["date"]["col"],
         o_f["counterparty"],
@@ -195,12 +239,14 @@ def parse_data(
         or i_f["payment_category"] not in data_raw.columns
     ):
         data_raw[o_f["payment_category"]] = None
+    else:
+        data_raw[o_f["payment_category"]] = data_raw[i_f["payment_category"]]
 
     # amount
     data_raw[o_f["amount"]] = parse_amounts(
         data_raw[i_f["amount"]["col"]],
-        i_f["amount"]["format"]["thousands_sep"],
-        i_f["amount"]["format"]["decimal_sep"],
+        i_f["amount"]["format"]["thousands_separator"],
+        i_f["amount"]["format"]["decimal_separator"],
         errors,
     )
 
@@ -208,13 +254,11 @@ def parse_data(
     data_raw[o_f["date"]["col"]] = parse_dates(
         data_raw[i_f["date"]["col"]], i_f["date"].get("format", DATE_FORMATS), errors
     )
-    data_raw[o_f["date"]["col"]] = data_raw[o_f["date"]["col"]].dt.strftime("%Y-%m-%d")
     data_raw["month"] = data_raw[o_f["date"]["col"]].dt.strftime("%Y%m")
+    data_raw[o_f["date"]["col"]] = data_raw[o_f["date"]["col"]].dt.strftime("%Y-%m-%d")
 
     # concat columns - protistrana & message
     data_raw[o_f["counterparty"]] = combine_fields(data_raw, i_f["counterparty_ids"])
     data_raw[o_f["message"]] = combine_fields(data_raw, i_f["message"])
 
     return data_raw[keep_cols]
-
-
