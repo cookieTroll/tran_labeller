@@ -1,0 +1,7 @@
+file_name_input: ../data/airbank_1723805018_2025-07-03_16-27.csv
+file_name_output: ../data/air_2025_01_06.xlsx
+fix_file_name: ../data/records_to_fix_airbank.json
+
+input_config: ../config/generic/input_config_airbank.yaml
+output_config: ../config/generic/output_config.yaml
+keywords_config: ../config/generic/keywords.yaml
