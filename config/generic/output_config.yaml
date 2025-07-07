@@ -9,6 +9,8 @@ date:
 generated_suggestions: category_suggestion
 transaction_type: Typ transakce
 payment_category: Kategorie_plateb # standardized name for category
+categories_excl_from_agg:
+  - nezapočítávat # there's lowercasing in the pipeline
 sort_by:
   - Kategorie_plateb
   - měsíc # processed columns
