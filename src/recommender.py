@@ -63,16 +63,16 @@ def obtain_index_to_fix(
       - manual list of ids
     """
     ind = []
-    cat_col = config["output_format"]["payment_category"]
+    cat_col = config["output_config"]["payment_category"]
     transaction_type, inbound_flag = (
-        config["output_format"]["transaction_type"],
-        config["input_format"]["inbound_keyword"],
+        config["output_config"]["transaction_type"],
+        config["input_config"]["input_format"]["inbound_keyword"],
     )
-    suggestions = config["output_format"]["generated_suggestions"]
-    date = config["output_format"]["date"]["col"]
-    amount = config["output_format"]["amount"]
-    counterparty = config["output_format"]["counterparty"]
-    message = config["output_format"]["message"]
+    suggestions = config["output_config"]["generated_suggestions"]
+    date = config["output_config"]["date"]["col"]
+    amount = config["output_config"]["amount"]
+    counterparty = config["output_config"]["counterparty"]
+    message = config["output_config"]["message"]
 
     if incl_inbound:
         ind += data[
@@ -92,10 +92,11 @@ def obtain_index_to_fix(
     ind = list(set(ind))
     non_matching_data = data.loc[ind].to_dict("index")
     fix_dict = {
-        k: f"""{{ '{cat_col}': '{v[cat_col]}'/'{v[suggestions]}'}},
-            #original: {v[cat_col]}, suggested: {v[suggestions]},
-            proti: {v[counterparty]}, zprava: {v[message]}, datum: {v[date]} castka: {v[amount]}
-      """
+        k: (
+            f"{{ '{cat_col}': '{v[cat_col]}'/'{v[suggestions]}'}} "
+            f"#original: {v[cat_col]}, suggested: {v[suggestions]}, "
+            f"proti: {v[counterparty]}, zprava: {v[message]}, datum: {v[date]} castka: {v[amount]}"
+        )
         for k, v in non_matching_data.items()
     }
 
