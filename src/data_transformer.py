@@ -217,8 +217,8 @@ def parse_data(
         according to the output configuration.
     """
     data_raw = data.copy(deep=True)
-    i_f = config["input_format"]
-    o_f = config["output_format"]
+    i_f = config["input_config"]["input_format"]
+    o_f = config["output_config"]
 
     keep_cols = [
         o_f["transaction_type"],
