@@ -85,7 +85,7 @@ class FullConfigSchema(BaseModel):
 
 def validate_config(
     config_dict: dict[str, Any], cf_type=Literal["Full", "High-level"]
-) -> bool:
+) -> bool | BaseModel | None:
     """
     Validate the configuration dictionary against the schema.
 
@@ -101,10 +101,10 @@ def validate_config(
     """
     try:
         if cf_type == "Full":
-            FullConfigSchema(**config_dict)
+            return FullConfigSchema(**config_dict)
         else:
-            BankConfig(**config_dict)
-        return True
+            return BankConfig(**config_dict)
+
     except ValidationError as e:
         logging.critical("Bank configuration validation failed:")
         for error in e.errors():
@@ -112,8 +112,11 @@ def validate_config(
         raise e
 
 
-def validate_data(data: pd.DataFrame, cols: list[str]) -> bool:
+def validate_data(data: pd.DataFrame, input_format_config:InputFormat) -> bool:
     """Validates that all columns in cols are present in the data."""
+
+    i_f = input_format_config
+    cols = [i_f['payment_category'], i_f['date']['col'], i_f['amount']['col'], i_f['transaction_type']] + i_f['counterparty_ids'] + i_f['message']
     check = set(cols).issubset(set(data.columns))
     if not check:
         logging.critical(f"Missing columns in data: {set(cols) - set(data.columns)}")
