@@ -1,6 +1,6 @@
-file_name_input: ../data/Pohyby_1015274383_202507042251.csv
-file_name_output: ../data/raif_2025_01_06.xlsx
-fix_file_name: ../data/records_to_fix_raif.json
+file_name_input: ../data/raw/Pohyby_1015274383_202507042251.csv
+file_name_output: ../data/processed/raif_2025_01_06.xlsx
+fix_file_name: ../data/processed/records_to_fix_raif.json
 
 input_config: ../config/generic/input_config_raiff.yaml
 output_config: ../config/generic/output_config.yaml
