@@ -42,6 +42,7 @@ class OutputFormat(BaseModel):
     date: DateConfig
     transaction_type: str
     payment_category: Optional[str]
+    categories_excl_from_agg: Optional[list[str]] = None
     generated_suggestions: str
     sort_by: List[str]
 
@@ -112,11 +113,20 @@ def validate_config(
         raise e
 
 
-def validate_data(data: pd.DataFrame, input_format_config:InputFormat) -> bool:
+def validate_data(data: pd.DataFrame, input_format_config: InputFormat) -> bool:
     """Validates that all columns in cols are present in the data."""
 
     i_f = input_format_config
-    cols = [i_f['payment_category'], i_f['date']['col'], i_f['amount']['col'], i_f['transaction_type']] + i_f['counterparty_ids'] + i_f['message']
+    cols = (
+        [
+            i_f["payment_category"],
+            i_f["date"]["col"],
+            i_f["amount"]["col"],
+            i_f["transaction_type"],
+        ]
+        + i_f["counterparty_ids"]
+        + i_f["message"]
+    )
     check = set(cols).issubset(set(data.columns))
     if not check:
         logging.critical(f"Missing columns in data: {set(cols) - set(data.columns)}")
