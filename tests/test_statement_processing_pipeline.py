@@ -1,10 +1,16 @@
-import pytest
-import pandas as pd
 import logging
+from enum import Enum
 from io import StringIO
 from unittest.mock import Mock, patch
-from enum import Enum
-from src.statement_processing_pipeline import StatementProcessor, PipelineStep, FULL_PIPELINE
+
+import pandas as pd
+import pytest
+
+from src.statement_processing_pipeline import (
+    FULL_PIPELINE,
+    PipelineStep,
+    StatementProcessor,
+)
 
 
 @pytest.fixture
@@ -14,13 +20,8 @@ def sample_config():
         "file_name_output": "output.xlsx",
         "fix_file_name": "fixes.json",
         "input_config": {
-            "parsing": {
-                "delimiter": ",",
-                "encoding": "utf-8"
-            },
-            "input_format": {
-                "required_columns": ["date", "amount", "description"]
-            }
+            "parsing": {"delimiter": ",", "encoding": "utf-8"},
+            "input_format": {"required_columns": ["date", "amount", "description"]},
         },
         "output_config": {
             "payment_category": "category",
@@ -29,29 +30,31 @@ def sample_config():
             "message": "description",
             "amount": "amount",
             "sort_by": ["date"],
-            "categories_excl_from_agg": ["transfer"]
+            "categories_excl_from_agg": ["transfer"],
         },
         "keywords_config": {
             "food": ["restaurant", "grocery"],
-            "transport": ["uber", "taxi"]
-        }
+            "transport": ["uber", "taxi"],
+        },
     }
 
 
 @pytest.fixture
 def sample_data():
-    return pd.DataFrame({
-        'date': ['2025-01-01', '2025-01-02'],
-        'amount': [100.0, 200.0],
-        'description': ['Restaurant Payment', 'Uber Ride'],
-        'category': ['food', 'transport'],
-        'counterparty': ['Restaurant ABC', 'Uber'],
-    })
+    return pd.DataFrame(
+        {
+            "date": ["2025-01-01", "2025-01-02"],
+            "amount": [100.0, 200.0],
+            "description": ["Restaurant Payment", "Uber Ride"],
+            "category": ["food", "transport"],
+            "counterparty": ["Restaurant ABC", "Uber"],
+        }
+    )
 
 
 @pytest.fixture
 def logger():
-    return logging.getLogger('test_logger')
+    return logging.getLogger("test_logger")
 
 
 class TestStatementProcessor:
@@ -76,7 +79,7 @@ class TestStatementProcessor:
         with pytest.raises(ValueError, match="requires a fix dictionary"):
             processor.process_step(PipelineStep.UPDATE_CATEGORIES, sample_data)
 
-    @patch('src.statement_processing_pipeline.read_csv')
+    @patch("src.statement_processing_pipeline.read_csv")
     def test_load_data(self, mock_read_csv, processor, sample_data):
         mock_read_csv.return_value = sample_data
         data, _ = processor.process_step(PipelineStep.LOAD)
@@ -84,7 +87,7 @@ class TestStatementProcessor:
         assert processor.raw_data is not None
         assert len(data) == len(sample_data)
 
-    @patch('src.statement_processing_pipeline.parse_data')
+    @patch("src.statement_processing_pipeline.parse_data")
     def test_parse_data(self, mock_parse_data, processor, sample_data):
         mock_parse_data.return_value = sample_data
         data, _ = processor.process_step(PipelineStep.PARSE, sample_data)
@@ -94,50 +97,64 @@ class TestStatementProcessor:
     def test_generate_suggestions(self, processor, sample_data):
         data, _ = processor.process_step(PipelineStep.GENERATE_SUGGESTIONS, sample_data)
         assert isinstance(data, pd.DataFrame)
-        assert processor.config["output_config"]["generated_suggestions"] in data.columns
+        assert (
+            processor.config["output_config"]["generated_suggestions"] in data.columns
+        )
 
-    @patch('src.statement_processing_pipeline.read_write_json')
+    @patch("src.statement_processing_pipeline.read_write_json")
     def test_save_conflicts(self, mock_read_write_json, processor, sample_data):
         mock_read_write_json.return_value = {}
-        data, fix_dict = processor.process_step(PipelineStep.SAVE_CONFLICTS, sample_data)
+        data, fix_dict = processor.process_step(
+            PipelineStep.SAVE_CONFLICTS, sample_data
+        )
         assert isinstance(data, pd.DataFrame)
         mock_read_write_json.assert_called_once()
 
-    @patch('src.statement_processing_pipeline.read_write_json')
+    @patch("src.statement_processing_pipeline.read_write_json")
     def test_load_conflicts(self, mock_read_write_json, processor, sample_data):
         mock_read_write_json.return_value = {"1": {"category": "food"}}
-        data, fix_dict = processor.process_step(PipelineStep.LOAD_CONFLICTS, sample_data)
+        data, fix_dict = processor.process_step(
+            PipelineStep.LOAD_CONFLICTS, sample_data
+        )
         assert isinstance(fix_dict, dict)
         assert isinstance(data, pd.DataFrame)
 
-    @patch('src.statement_processing_pipeline.update_categories')
+    @patch("src.statement_processing_pipeline.update_categories")
     def test_update_categories(self, mock_update_categories, processor, sample_data):
         fix_dict = {"1": {"category": "food"}}
         mock_update_categories.return_value = sample_data
-        data, _ = processor.process_step(PipelineStep.UPDATE_CATEGORIES, sample_data, fix_dict)
+        data, _ = processor.process_step(
+            PipelineStep.UPDATE_CATEGORIES, sample_data, fix_dict
+        )
         assert isinstance(data, pd.DataFrame)
         assert processor.final_data is None  # Should only be set in run_second_part
 
     def test_run_first_part(self, processor, sample_data):
-        with patch.multiple(processor,
-                            _load_data=Mock(return_value=(sample_data, None)),
-                            _parse_data=Mock(return_value=(sample_data, None)),
-                            _generate_suggestions=Mock(return_value=(sample_data, None)),
-                            _save_conflicts=Mock(return_value=(sample_data, None))):
+        with patch.multiple(
+            processor,
+            _load_data=Mock(return_value=(sample_data, None)),
+            _parse_data=Mock(return_value=(sample_data, None)),
+            _generate_suggestions=Mock(return_value=(sample_data, None)),
+            _save_conflicts=Mock(return_value=(sample_data, None)),
+        ):
             result = processor.run_first_part(sample_data)
             assert isinstance(result, pd.DataFrame)
 
     def test_run_second_part(self, processor, sample_data):
         fix_dict = {"1": {"category": "food"}}
-        with patch.multiple(processor,
-                            _load_conflicts=Mock(return_value=(sample_data, fix_dict)),
-                            _update_categories=Mock(return_value=(sample_data, None))):
+        with patch.multiple(
+            processor,
+            _load_conflicts=Mock(return_value=(sample_data, fix_dict)),
+            _update_categories=Mock(return_value=(sample_data, None)),
+        ):
             processor.parsed_data = sample_data
             processor.run_second_part(sample_data, fix_dict)
             assert isinstance(processor.parsed_data, pd.DataFrame)
 
-    @patch('src.statement_processing_pipeline.generate_aggregate_data')
-    def test_generate_aggregate_data(self, mock_generate_aggregate, processor, sample_data):
+    @patch("src.statement_processing_pipeline.generate_aggregate_data")
+    def test_generate_aggregate_data(
+        self, mock_generate_aggregate, processor, sample_data
+    ):
         processor.final_data = sample_data
         mock_generate_aggregate.return_value = sample_data
         result = processor.generate_aggregate_data()
@@ -156,7 +173,7 @@ class TestStatementProcessor:
         assert isinstance(result, pd.DataFrame)
         assert result.equals(sample_data)
 
-    @patch('src.statement_processing_pipeline.save_output')
+    @patch("src.statement_processing_pipeline.save_output")
     def test_save_output(self, mock_save_output, processor, sample_data):
         processor.raw_data = sample_data
         processor.parsed_data = sample_data
@@ -169,7 +186,7 @@ class TestStatementProcessor:
             sample_data,
             sample_data,
             sample_data,
-            processor.logger
+            processor.logger,
         )
 
 
