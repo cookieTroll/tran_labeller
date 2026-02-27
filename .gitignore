@@ -16,6 +16,7 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+tests/test_logger.py
 
 # Sensitive configuration (temporary solution)
 config/generic/keywords.yaml
