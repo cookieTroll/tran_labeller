@@ -255,13 +255,14 @@ def test_clean_overlapping_fields_no_overlap():
 def test_clean_overlapping_fields_with_nan():
     """Test handling of NaN values"""
     df = pd.DataFrame(
-        {"col1": ["apple", np.nan, "cherry"], "col2": ["big apple", "banana", np.nan]}
+        {"col1": ["apple", pd.NA, "cherry"], "col2": ["big apple", "banana", pd.NA]},  dtype=str
     )
     expected = pd.DataFrame(
-        {"col1": [np.nan, np.nan, "cherry"], "col2": ["big apple", "banana", np.nan]}
+        {"col1": [pd.NA, pd.NA, "cherry"], "col2": ["big apple", "banana", pd.NA]},  dtype=str
     )
     result = clean_overlapping_fields(df, ["col1", "col2"])
-    assert_frame_equal(result, expected, check_dtype=False)
+
+    assert_frame_equal(result.astype(str), expected.astype(str), check_dtype=False, check_exact=False)
 
 
 def test_clean_overlapping_fields_multiple_columns():
