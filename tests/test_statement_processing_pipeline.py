@@ -6,8 +6,11 @@ from unittest.mock import Mock, patch
 import pandas as pd
 import pytest
 
-from src.statement_processing_pipeline import (FULL_PIPELINE, PipelineStep,
-                                               StatementProcessor)
+from src.statement_processing_pipeline import (
+    FULL_PIPELINE,
+    PipelineStep,
+    StatementProcessor,
+)
 
 
 @pytest.fixture

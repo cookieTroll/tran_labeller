@@ -5,8 +5,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from src.data_transformer import (clean_overlapping_fields, parse_amounts,
-                                  parse_dates)
+from src.data_transformer import clean_overlapping_fields, parse_amounts, parse_dates
 
 
 @pytest.fixture

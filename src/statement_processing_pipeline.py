@@ -9,8 +9,7 @@ import pandas as pd
 from src.data_transformer import parse_data
 from src.format_validators import FullConfigSchema, validate_data
 from src.loaders import read_csv, read_write_json
-from src.postprocessor import (generate_aggregate_data, save_output,
-                               update_categories)
+from src.postprocessor import generate_aggregate_data, save_output, update_categories
 from src.recommender import generate_suggestions, obtain_index_to_fix
 
 
