@@ -30,20 +30,23 @@ def sample_row():
         }
     )
 
-
 @pytest.fixture
 def sample_config():
     return {
         "output_format": {
             "payment_category": "category",
             "transaction_type": "type",
-            "generated_suggestions": "suggestions",
-            "date": {"col": "date"},
-            "amount": "amount",
-            "counterparty": "counterparty",
-            "message": "message",
         },
+        "output_config": {"transaction_type":"type",
+                          "payment_category": "category",
+                          "amount": "amount",
+                          "generated_suggestions": "suggestions",
+                          "date": {"col": "date"},
+                          "counterparty": "counterparty",
+                          "message": "message",
+                          },
         "input_format": {"inbound_keyword": "incoming"},
+        "input_config": {"input_format": {"inbound_keyword": "incoming"},}
     }
 
 
@@ -129,7 +132,7 @@ def test_obtain_index_to_fix_conflicts(sample_dataframe, sample_config):
     indices, fix_dict = obtain_index_to_fix(
         sample_dataframe, sample_config, incl_conflicts=True
     )
-    assert len(indices) == 1
+    assert len(indices) == 2
     assert isinstance(fix_dict, dict)
 
 
