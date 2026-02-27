@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.postprocessor import (generate_aggregate_data, save_output,
-                               update_categories)
+from src.postprocessor import generate_aggregate_data, save_output, update_categories
 
 
 @pytest.fixture
