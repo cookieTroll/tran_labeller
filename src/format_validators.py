@@ -1,9 +1,9 @@
 """Script contains functions to validate configuration files."""
 
 import logging
-import pandas as pd
-from typing import List, Optional, Any, Literal, Union
+from typing import Any, List, Literal, Optional, Union
 
+import pandas as pd
 from openpyxl.pivot.fields import Boolean
 from pydantic import BaseModel, ValidationError
 

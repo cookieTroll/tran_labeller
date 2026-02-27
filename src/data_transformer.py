@@ -6,7 +6,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-
 DATE_FORMATS = [
     "%d/%m/%Y %H:%M:%S",
     "%d/%m/%Y",
@@ -156,12 +155,12 @@ def clean_overlapping_fields(df: pd.DataFrame, column_ids: list[str]) -> pd.Data
             data.loc[valid_pairs & exact_matches, col2] = pd.NA
 
             # Find contained strings
-            contains1 = pd.Series([
-                (v1 in v2) for v1, v2 in zip(s1, s2)
-            ], index=s1.index)
-            contains2 = pd.Series([
-                (v2 in v1) for v1, v2 in zip(s1, s2)
-            ], index=s1.index)
+            contains1 = pd.Series(
+                [(v1 in v2) for v1, v2 in zip(s1, s2)], index=s1.index
+            )
+            contains2 = pd.Series(
+                [(v2 in v1) for v1, v2 in zip(s1, s2)], index=s1.index
+            )
             # Update based on containment
             data.loc[valid_pairs & contains1, col1] = pd.NA
             data.loc[valid_pairs & contains2, col2] = pd.NA

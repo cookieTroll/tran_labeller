@@ -73,6 +73,7 @@ class StatementProcessor:
         final_data (Optional[pd.DataFrame]): Categorized data after all processing steps are completed.
         aggregate_data (Optional[pd.DataFrame]): Aggregated data grouped by months and categories.
     """
+
     def __init__(
         self,
         config: FullConfigSchema,

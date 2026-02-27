@@ -1,9 +1,9 @@
 """The module contains functions to generate and process suggestions."""
 
-from typing import Union, Any
+import logging
+from typing import Any, Union
 
 import pandas as pd
-import logging
 
 
 def generate_suggestions(

@@ -6,11 +6,8 @@ from unittest.mock import Mock, patch
 import pandas as pd
 import pytest
 
-from src.statement_processing_pipeline import (
-    FULL_PIPELINE,
-    PipelineStep,
-    StatementProcessor,
-)
+from src.statement_processing_pipeline import (FULL_PIPELINE, PipelineStep,
+                                               StatementProcessor)
 
 
 @pytest.fixture
@@ -21,17 +18,20 @@ def sample_config():
         "fix_file_name": "fixes.json",
         "input_config": {
             "parsing": {"delimiter": ",", "encoding": "utf-8"},
-            "input_format": {"required_columns": ["date", "amount", "description"],
-
-            'payment_category': 'category',
-            'date': {'col': 'date', 'format': ['%Y-%m-%d']},
-            'counterparty_ids': ['counterparty'],
-            'message': ['description'],
-            'amount': {'col': 'amount',
-                       'format': {'decimal_separator': ',', 'thousands_separator': ''}},
-            'transaction_type': 'transaction_type',
-            'inbound_keyword': 'Inbound'
-        }},
+            "input_format": {
+                "required_columns": ["date", "amount", "description"],
+                "payment_category": "category",
+                "date": {"col": "date", "format": ["%Y-%m-%d"]},
+                "counterparty_ids": ["counterparty"],
+                "message": ["description"],
+                "amount": {
+                    "col": "amount",
+                    "format": {"decimal_separator": ",", "thousands_separator": ""},
+                },
+                "transaction_type": "transaction_type",
+                "inbound_keyword": "Inbound",
+            },
+        },
         "output_config": {
             "payment_category": "category",
             "generated_suggestions": "category",
@@ -40,9 +40,9 @@ def sample_config():
             "amount": "amount",
             "sort_by": ["date"],
             "categories_excl_from_agg": ["transfer"],
-            'date': {'col': 'date', 'format': ['%Y/%m/%d']},
-            'transaction_type': 'transaction_type',
-            "display_groups": 'display_groups'
+            "date": {"col": "date", "format": ["%Y/%m/%d"]},
+            "transaction_type": "transaction_type",
+            "display_groups": "display_groups",
         },
         "keywords_config": {
             "food": ["restaurant", "grocery"],
@@ -56,7 +56,7 @@ def sample_data():
     return pd.DataFrame(
         {
             "date": ["2025-01-01", "2025-01-02"],
-            "amount": ['100.0', '200.0'],
+            "amount": ["100.0", "200.0"],
             "description": ["Restaurant Payment", "Uber Ride"],
             "category": ["food", "transport"],
             "counterparty": ["Restaurant ABC", "Uber"],
@@ -154,7 +154,7 @@ class TestStatementProcessor:
             assert isinstance(result, pd.DataFrame)
 
     # I need to set-up the input of load conflicts correctly
-    #def test_run_second_part(self, processor, sample_data):
+    # def test_run_second_part(self, processor, sample_data):
     #    fix_dict = {"1": {"category": "food"}}
     #    with patch.multiple(
     #        processor,

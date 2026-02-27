@@ -30,6 +30,7 @@ def sample_row():
         }
     )
 
+
 @pytest.fixture
 def sample_config():
     return {
@@ -37,16 +38,19 @@ def sample_config():
             "payment_category": "category",
             "transaction_type": "type",
         },
-        "output_config": {"transaction_type":"type",
-                          "payment_category": "category",
-                          "amount": "amount",
-                          "generated_suggestions": "suggestions",
-                          "date": {"col": "date"},
-                          "counterparty": "counterparty",
-                          "message": "message",
-                          },
+        "output_config": {
+            "transaction_type": "type",
+            "payment_category": "category",
+            "amount": "amount",
+            "generated_suggestions": "suggestions",
+            "date": {"col": "date"},
+            "counterparty": "counterparty",
+            "message": "message",
+        },
         "input_format": {"inbound_keyword": "incoming"},
-        "input_config": {"input_format": {"inbound_keyword": "incoming"},}
+        "input_config": {
+            "input_format": {"inbound_keyword": "incoming"},
+        },
     }
 
 
